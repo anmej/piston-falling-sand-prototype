@@ -14,3 +14,5 @@ Change RAIN_SPARSENESS const to change sand rain density.
 This program might require installation of freetype and SDL2 libraries to work.
 
 Compiles with: rustc 1.2.0-nightly (0250ff9a5 2015-06-17)
+
+![Screenshot](screenshot.png?raw=true "Screenshot")

@@ -63,7 +63,6 @@ fn main() {
         }
 
         if let Some(_) = e.update_args() {
-            //try put everything here?
             //Update game and image on every loop
             if !paused {
                 if raining {game.rain()}
@@ -114,7 +113,6 @@ fn main() {
             }
             texture.update(&image);
             gl.draw(args.viewport(), |c, gl| {
-
                 graphics::clear([1.0; 4], gl);
                 graphics::image(&texture, c.transform, gl);
             });

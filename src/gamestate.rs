@@ -20,8 +20,6 @@ pub struct Loc {
     pub y: i16
 }
 
-//pub struct Neighbours ((bool,bool,bool),(bool,bool),(bool,bool,bool));
-
 pub struct Map {pub map: Box<[[bool; GRID_HEIGHT as usize]; GRID_WIDTH as usize]>}
 
 pub struct GameState {
@@ -36,7 +34,7 @@ pub struct GameState {
 
 impl Map {
     fn is_occupied(&self, x: i16, y: i16) -> bool {
-        // not valid is not occupied
+        // not valid is not occupied to allow particles to leave the grid
         if !GameState::is_valid(x, y) {false} else {self.map[x as usize][y as usize]}
     }
 

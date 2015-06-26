@@ -1,0 +1,13 @@
+[package]
+name = "falling_sand"
+version = "0.1.0"
+authors = ["anmej"]
+
+[dependencies]
+rand = "0.3"
+
+pistoncore-sdl2_window = "0.1.0"
+piston = "0.1.4"
+piston2d-opengl_graphics = "0.1.0"
+piston2d-graphics = "0.1.4"
+image = "0.3.10"

@@ -29,6 +29,7 @@ fn main() {
 
     let mut paused = true;
     let mut raining = true;
+    let mut redraw_needed = true;
 
     let mut mouse_buttons_pressed = (false, false); //left, right
 
@@ -40,11 +41,12 @@ fn main() {
         .exit_on_esc(true)
         //what those do?
         .vsync(true)
-        .samples(4)
-        .fullscreen(true)
+        .samples(1)
+        .fullscreen(false)
     );
     let window = Rc::new(RefCell::new(window));
     let mut image = image::ImageBuffer::from_pixel(width, height, image::Rgba([0, 0, 0, 255]));
+    let blank = image.clone().into_raw();
     let mut texture = Texture::from_image(&image);
     let ref mut gl = GlGraphics::new(opengl);
     for e in window.clone().events().max_fps(120).ups(60) {
@@ -57,6 +59,9 @@ fn main() {
                     paused = !paused;
                     window.borrow_mut().set_capture_cursor(!paused); //remove cursor when game is running
                 },
+                Key::D => {
+                    println!("{:?}", game);
+                },
                 Key::R => {raining = !raining},
                 _ => {}
             }
@@ -67,6 +72,7 @@ fn main() {
             if !paused {
                 if raining {game.rain()}
                 game.update();
+                redraw_needed = true;
             }//if !paused {
         }
 
@@ -86,6 +92,7 @@ fn main() {
                 }
             }
             if let Some(pos) = e.mouse_cursor_args() {
+                redraw_needed = true;
                 //get mouse coordinates and draw something if there is place
                 let (mouse_x, mouse_y) = (pos[0] as i16, pos[1] as i16);
 
@@ -102,21 +109,24 @@ fn main() {
             }
         } //if paused
 
-        if let Some(args) = e.render_args() {
+        if redraw_needed {
+            if let Some(args) = e.render_args() {
+                image = image::ImageBuffer::from_vec(width, height, blank.clone()).unwrap();
+                for particle in game.particles.iter() {
+                    image.put_pixel(particle.x as u32, particle.y as u32, 
+                                    image::Rgba([238,232,170,255]));
+                }
+                for obstacle in game.obstacles.iter() {
+                    image.put_pixel(obstacle.x as u32, obstacle.y as u32, 
+                                    image::Rgba([128,0,0,255]));
+                }
+                texture.update(&image);
+                gl.draw(args.viewport(), |c, gl| {
+                    graphics::image(&texture, c.transform, gl);
+                });
 
-            image = image::ImageBuffer::from_pixel(width, height, image::Rgba([0, 0, 0, 255]));
-            for particle in game.particles.iter() {
-                image.put_pixel(particle.x as u32, particle.y as u32, image::Rgba([238,232,170,255]));
+                redraw_needed = false;
             }
-            for obstacle in game.obstacles.iter() {
-                image.put_pixel(obstacle.x as u32, obstacle.y as u32, image::Rgba([128,0,0,255]));
-            }
-            texture.update(&image);
-            gl.draw(args.viewport(), |c, gl| {
-                graphics::clear([1.0; 4], gl);
-                graphics::image(&texture, c.transform, gl);
-            });
-
         };
     }
 }

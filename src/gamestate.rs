@@ -1,4 +1,6 @@
 extern crate rand;
+
+use std::fmt;
 use rand::{Rng, SeedableRng, XorShiftRng};
 
 pub const GRID_HEIGHT: i16 = 900;
@@ -32,16 +34,25 @@ pub struct GameState {
     pub rng: XorShiftRng
 }
 
+impl fmt::Debug for GameState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        writeln!(f, "GameState {{").ok();
+        writeln!(f, "    num particles = {}", self.particles.len()).ok();
+        writeln!(f, "    num obstacles = {}", self.obstacles.len()).ok();
+        writeln!(f, "}}")
+    }
+}
+
 impl Map {
     fn is_occupied(&self, x: i16, y: i16) -> bool {
-        //Not valid is not occupied (false) to allow particles to leave the grid.
-        //To prevent double bound checking with GameState::is_valid(), unwrap get()
-        //and return defailt false on None
-        if let Some(arr) = self.map.get(x as usize) {
-            *arr.get(y as usize).unwrap_or(&false)
-        } else {
+        // not valid is not occupied to allow particles to leave the grid
+        if !GameState::is_valid(x, y) {
             false
-        }
+        } else {
+            unsafe {
+                *self.map.get_unchecked(x as usize)
+                         .get_unchecked(y as usize)}
+            }
     }
 
     fn get_neighbours(&mut self, x: i16, y: i16) -> [bool; 8] {
@@ -79,7 +90,7 @@ impl GameState {
                 //[_,X,_, o,o, _,X,_] => ( if self.rng.gen::<i16>()&2 == 0 {x-1} else {x+1}, y ), //random choice
                                         _ => continue,
             };
-            if GameState::is_valid(x_new, y_new) {
+            if Self::is_valid(x_new, y_new) {
                 self.map.remove_coord_map(x, y);
                 self.map.add_coord_map(x_new, y_new);
                 *particle = Loc {x: x_new, y: y_new};
@@ -104,14 +115,20 @@ impl GameState {
         }
     }
 
-    fn remove_particle_list (&mut self, x: i16, y: i16) {
-        let loc = Loc {x: x, y: y};
-        self.particles.retain(|p|{ p != &loc});
-    }
+    fn remove_indices_in_rect(items: &mut Vec<Loc>, 
+                              indexes_to_remove: &mut Vec<usize>,
+                              ul: Loc, lr: Loc) {
+        for (index, p) in items.iter().enumerate() {
+            if p.x >= ul.x && p.y >= ul.y && p.x < lr.x && p.y < lr.y {
+                indexes_to_remove.push(index);
+            }
+        }
 
-    fn remove_obstacle_list (&mut self, x: i16, y: i16) {
-        let loc = Loc {x: x, y: y};
-        self.obstacles.retain(|p|{ p != &loc});
+        for index in indexes_to_remove.iter().rev() {
+            items.swap_remove(*index);
+        }
+
+        indexes_to_remove.clear();
     }
 
     fn add_particle (&mut self, x: i16, y: i16) {
@@ -126,21 +143,22 @@ impl GameState {
         self.obstacles.push(loc);
     }
 
-    fn remove_coord(&mut self, x: i16, y: i16) {
-        self.map.remove_coord_map(x, y);
-        self.remove_obstacle_list(x, y);
-        self.remove_particle_list(x, y);
-    }
-
     pub fn remove_square (&mut self, ux: i16, uy: i16, dx: i16, dy: i16) {
         if Self::is_valid(ux + dx, uy + dy) {
             for x in ux..ux+dx {
                 for y in uy..uy+dy {
-                    if self.map.is_occupied(x, y) {
-                     self.remove_coord(x, y);
-                    }
+                    self.map.remove_coord_map(x, y);
                 }
             }
+
+            let ul = Loc {x: ux, y: uy};
+            let lr = Loc {x: ux + dx, y: uy + dy};
+            Self::remove_indices_in_rect(&mut self.obstacles, 
+                                              &mut self.indexes_to_remove,
+                                              ul.clone(), lr.clone());
+            Self::remove_indices_in_rect(&mut self.particles,
+                                              &mut self.indexes_to_remove,
+                                              ul, lr);
         }
     }
 

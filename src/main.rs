@@ -41,7 +41,7 @@ fn main() {
         .exit_on_esc(true)
         //what those do?
         .vsync(true)
-        .samples(4)
+        .samples(1)
         .fullscreen(true)
     );
     let window = Rc::new(RefCell::new(window));
@@ -122,7 +122,7 @@ fn main() {
                     graphics::clear([1.0; 4], gl);
                     graphics::image(&texture, c.transform, gl);
                 });
-                
+
                 redraw_needed = false;
             }
         };

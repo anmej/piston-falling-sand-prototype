@@ -1,4 +1,6 @@
 extern crate rand;
+
+use std::fmt;
 use rand::{Rng, SeedableRng, XorShiftRng};
 
 pub const GRID_HEIGHT: i16 = 900;
@@ -30,6 +32,15 @@ pub struct GameState {
     pub max_x: i16,
     pub max_y: i16,
     pub rng: XorShiftRng
+}
+
+impl fmt::Debug for GameState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        writeln!(f, "GameState {{").ok();
+        writeln!(f, "    num particles = {}", self.particles.len()).ok();
+        writeln!(f, "    num obstacles = {}", self.obstacles.len()).ok();
+        writeln!(f, "}}")
+    }
 }
 
 impl Map {

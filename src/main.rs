@@ -59,6 +59,9 @@ fn main() {
                     paused = !paused;
                     window.borrow_mut().set_capture_cursor(!paused); //remove cursor when game is running
                 },
+                Key::D => {
+                    println!("{:?}", game);
+                },
                 Key::R => {raining = !raining},
                 _ => {}
             }

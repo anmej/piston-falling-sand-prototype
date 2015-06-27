@@ -42,7 +42,7 @@ fn main() {
         //what those do?
         .vsync(true)
         .samples(1)
-        .fullscreen(true)
+        .fullscreen(false)
     );
     let window = Rc::new(RefCell::new(window));
     let mut image = image::ImageBuffer::from_pixel(width, height, image::Rgba([0, 0, 0, 255]));

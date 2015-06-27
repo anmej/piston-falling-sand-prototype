@@ -104,16 +104,34 @@ impl GameState {
         }
     }
 
+    fn remove_indices_matching_loc(items: &mut Vec<Loc>, 
+                               indexes_to_remove: &mut Vec<usize>,
+                               loc: Loc) {
+        {
+            let mut it = items.iter();
+
+            while let Some(index) = it.position(|p| p == &loc) {
+                indexes_to_remove.push(index);
+            }
+        }
+
+        for index in indexes_to_remove.iter().rev() {
+            items.swap_remove(*index);
+        }
+
+        indexes_to_remove.clear();
+    }
+
     fn remove_particle_list (&mut self, x: i16, y: i16) {
-        remove_indices_matching_loc(&mut self.particles,
-                                    &mut self.indexes_to_remove,
-                                    Loc {x: x, y: y})
+        Self::remove_indices_matching_loc(&mut self.particles,
+                                          &mut self.indexes_to_remove,
+                                          Loc {x: x, y: y})
     }
 
     fn remove_obstacle_list (&mut self, x: i16, y: i16) {
-        remove_indices_matching_loc(&mut self.obstacles, 
-                                    &mut self.indexes_to_remove,
-                                    Loc {x: x, y: y})
+        Self::remove_indices_matching_loc(&mut self.obstacles, 
+                                          &mut self.indexes_to_remove,
+                                          Loc {x: x, y: y})
     }
 
     fn add_particle (&mut self, x: i16, y: i16) {
@@ -172,22 +190,3 @@ impl GameState {
     }
 
 }//end impl GameState
-
-
-fn remove_indices_matching_loc(items: &mut Vec<Loc>, 
-                               indexes_to_remove: &mut Vec<usize>,
-                               loc: Loc) {
-    {
-        let mut it = items.iter();
-
-        while let Some(index) = it.position(|p| p == &loc) {
-            indexes_to_remove.push(index);
-        }
-    }
-
-    for index in indexes_to_remove.iter().rev() {
-        items.swap_remove(*index);
-    }
-
-    indexes_to_remove.clear();
-}

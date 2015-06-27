@@ -14,7 +14,7 @@ pub const RAIN_SPARSENESS: i16 = 5;
 pub const X: bool = true;
 pub const o: bool = false;
 
-#[derive(PartialEq, Clone)]
+#[derive(Eq, PartialEq, Clone)]
 pub struct Loc {
     pub x: i16,
     pub y: i16
@@ -34,15 +34,20 @@ pub struct GameState {
 
 impl Map {
     fn is_occupied(&self, x: i16, y: i16) -> bool {
-        // not valid is not occupied to allow particles to leave the grid
-        if !GameState::is_valid(x, y) {false} else {self.map[x as usize][y as usize]}
+        //Not valid is not occupied (false) to allow particles to leave the grid.
+        //To prevent double bound checking with GameState::is_valid(), unwrap get()
+        //and return defailt false on None
+        if let Some(arr) = self.map.get(x as usize) {
+            *arr.get(y as usize).unwrap_or(&false)
+        } else {
+            false
+        }
     }
 
     fn get_neighbours(&mut self, x: i16, y: i16) -> [bool; 8] {
         [self.is_occupied(x-1, y-1), self.is_occupied(x, y-1), self.is_occupied(x+1, y-1),
         self.is_occupied(x-1, y), self.is_occupied(x+1, y),
         self.is_occupied(x-1, y+1), self.is_occupied(x, y+1), self.is_occupied(x-1, y+1)]
-
     }
 
     fn add_coord_map(&mut self, x: i16, y: i16) {
@@ -80,7 +85,7 @@ impl GameState {
                 *particle = Loc {x: x_new, y: y_new};
             } else {
                 self.map.map[x as usize][y as usize] = false;
-                self.indexes_to_remove.push(index);
+                self.indexes_to_remove.push(index); //prepare list of particles to remove
             }
         }
         //must use .rev(), otherwise you can't remove the last element

@@ -45,14 +45,14 @@ impl fmt::Debug for GameState {
 
 impl Map {
     fn is_occupied(&self, x: i16, y: i16) -> bool {
-        //Not valid is not occupied (false) to allow particles to leave the grid.
-        //To prevent double bound checking with GameState::is_valid(), unwrap get()
-        //and return defailt false on None
-        if let Some(arr) = self.map.get(x as usize) {
-            *arr.get(y as usize).unwrap_or(&false)
-        } else {
+        // not valid is not occupied to allow particles to leave the grid
+        if !GameState::is_valid(x, y) {
             false
-        }
+        } else {
+            unsafe {
+                *self.map.get_unchecked(x as usize)
+                         .get_unchecked(y as usize)}
+            }
     }
 
     fn get_neighbours(&mut self, x: i16, y: i16) -> [bool; 8] {

@@ -119,7 +119,6 @@ fn main() {
                 }
                 texture.update(&image);
                 gl.draw(args.viewport(), |c, gl| {
-                    graphics::clear([1.0; 4], gl);
                     graphics::image(&texture, c.transform, gl);
                 });
 

@@ -5,7 +5,7 @@ moving sand and immobile obstacle.
 
 **Space** to pause/unpause the game.  
 **R** to toggle rain of sand.  
-**D** to print debug information to standard output
+**D** to print debug information to standard output  
 **Left** mouse button to draw obstacles.  
 **Right** mouse button to delete.  
 

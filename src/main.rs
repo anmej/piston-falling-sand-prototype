@@ -45,6 +45,7 @@ fn main() {
     );
     let window = Rc::new(RefCell::new(window));
     let mut image = image::ImageBuffer::from_pixel(width, height, image::Rgba([0, 0, 0, 255]));
+    let blank = image.clone().into_raw();
     let mut texture = Texture::from_image(&image);
     let ref mut gl = GlGraphics::new(opengl);
     for e in window.clone().events().max_fps(120).ups(60) {
@@ -104,7 +105,7 @@ fn main() {
 
         if let Some(args) = e.render_args() {
 
-            image = image::ImageBuffer::from_pixel(width, height, image::Rgba([0, 0, 0, 255]));
+            image = image::ImageBuffer::from_vec(width, height, blank.clone()).unwrap();
             for particle in game.particles.iter() {
                 image.put_pixel(particle.x as u32, particle.y as u32, image::Rgba([238,232,170,255]));
             }

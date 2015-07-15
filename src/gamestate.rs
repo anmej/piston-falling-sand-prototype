@@ -87,6 +87,7 @@ impl GameState {
                 [_,X,_, o,X, _,X,_] => ( x-1, y ),
                 [_,X,_, X,o, _,X,_] => ( x+1, y ),
                 [_,X,_, o,o, _,X,_] => ( if y&2 == 0 {x-1} else {x+1}, y ), //deterministic choice
+                //[_,o,_, X,X, X,X,X] => ( x, y-1 ), //boiling sand
                 //[_,X,_, o,o, _,X,_] => ( if self.rng.gen::<i16>()&2 == 0 {x-1} else {x+1}, y ), //random choice
                                         _ => continue,
             };
@@ -115,7 +116,7 @@ impl GameState {
         }
     }
 
-    fn remove_indices_in_rect(items: &mut Vec<Loc>, 
+    fn remove_indices_in_rect(items: &mut Vec<Loc>,
                               indexes_to_remove: &mut Vec<usize>,
                               ul: Loc, lr: Loc) {
         for (index, p) in items.iter().enumerate() {
@@ -153,7 +154,7 @@ impl GameState {
 
             let ul = Loc {x: ux, y: uy};
             let lr = Loc {x: ux + dx, y: uy + dy};
-            Self::remove_indices_in_rect(&mut self.obstacles, 
+            Self::remove_indices_in_rect(&mut self.obstacles,
                                               &mut self.indexes_to_remove,
                                               ul.clone(), lr.clone());
             Self::remove_indices_in_rect(&mut self.particles,

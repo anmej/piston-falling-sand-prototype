@@ -36,8 +36,7 @@ fn main() {
     let opengl = OpenGL::_3_2;
     let (width, height) = (WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
     let window = Sdl2Window::new(
-        opengl,
-        WindowSettings::new("Falling Sand", (width, height))
+        WindowSettings::new("Falling Sand", (width, height)).opengl(opengl)
         .exit_on_esc(true)
         //what those do?
         .vsync(true)
@@ -57,7 +56,7 @@ fn main() {
             match key {
                 Key::Space => {
                     paused = !paused;
-                    window.borrow_mut().set_capture_cursor(!paused); //remove cursor when game is running
+                    //window.borrow_mut().set_capture_cursor(!paused); //remove cursor when game is running
                 },
                 Key::D => {
                     println!("{:?}", game);
@@ -113,11 +112,11 @@ fn main() {
             if let Some(args) = e.render_args() {
                 image = image::ImageBuffer::from_vec(width, height, blank.clone()).unwrap();
                 for particle in game.particles.iter() {
-                    image.put_pixel(particle.x as u32, particle.y as u32, 
+                    image.put_pixel(particle.x as u32, particle.y as u32,
                                     image::Rgba([238,232,170,255]));
                 }
                 for obstacle in game.obstacles.iter() {
-                    image.put_pixel(obstacle.x as u32, obstacle.y as u32, 
+                    image.put_pixel(obstacle.x as u32, obstacle.y as u32,
                                     image::Rgba([128,0,0,255]));
                 }
                 texture.update(&image);

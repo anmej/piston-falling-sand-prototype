@@ -1,6 +1,7 @@
 extern crate rand;
 
 use std::fmt;
+
 use rand::{Rng, SeedableRng, XorShiftRng};
 
 pub const GRID_HEIGHT: i16 = 900;
@@ -55,10 +56,10 @@ impl Map {
             }
     }
 
-    fn get_neighbours(&mut self, x: i16, y: i16) -> [bool; 8] {
-        [self.is_occupied(x-1, y-1), self.is_occupied(x, y-1), self.is_occupied(x+1, y-1),
+    fn get_neighbours(&mut self, x: i16, y: i16) -> (bool,bool,bool,bool,bool,bool,bool,bool) {
+        (self.is_occupied(x-1, y-1), self.is_occupied(x, y-1), self.is_occupied(x+1, y-1),
         self.is_occupied(x-1, y), self.is_occupied(x+1, y),
-        self.is_occupied(x-1, y+1), self.is_occupied(x, y+1), self.is_occupied(x-1, y+1)]
+        self.is_occupied(x-1, y+1), self.is_occupied(x, y+1), self.is_occupied(x-1, y+1))
     }
 
     fn add_coord_map(&mut self, x: i16, y: i16) {
@@ -67,6 +68,26 @@ impl Map {
 
     fn remove_coord_map(&mut self, x: i16, y: i16) {
         self.map[x as usize][y as usize] = false;
+    }
+
+    fn new() -> Map {
+        //casting a vector of bools into a 2d array of bools unsafely
+        //to avoid using unstable box_syntax
+        //code taken from: //https://gist.github.com/anonymous/62f21e4fb7a13867891c
+
+        let mut v: Vec<bool> = Vec::with_capacity(GRID_HEIGHT as usize *GRID_WIDTH as usize);
+        for _ in 0..(GRID_HEIGHT as usize * GRID_WIDTH as usize) {
+            v.push(false);
+        }
+        let v_slice = v.into_boxed_slice();
+
+        let boxed_array = unsafe {
+            let v_raw : *const [bool] = ::std::mem::transmute(v_slice);
+            let v_raw : *const [[bool; GRID_HEIGHT as usize]; GRID_WIDTH as usize] = v_raw as *const _;
+            ::std::mem::transmute(v_raw)
+        };
+
+        Map { map: boxed_array }
     }
 }
 
@@ -83,10 +104,10 @@ impl GameState {
             let neighbours = self.map.get_neighbours(x, y);
             let (x_new, y_new) = match neighbours {
                /*above  side below*/
-                [_,_,_, _,_, _,o,_] => ( x, y+1 ),
-                [_,X,_, o,X, _,X,_] => ( x-1, y ),
-                [_,X,_, X,o, _,X,_] => ( x+1, y ),
-                [_,X,_, o,o, _,X,_] => ( if y&2 == 0 {x-1} else {x+1}, y ), //deterministic choice
+                (_,_,_, _,_, _,o,_) => ( x, y+1 ),
+                (_,X,_, o,X, _,X,_) => ( x-1, y ),
+                (_,X,_, X,o, _,X,_) => ( x+1, y ),
+                (_,X,_, o,o, _,X,_) => ( if y&2 == 0 {x-1} else {x+1}, y ), //deterministic choice
                 //[_,o,_, X,X, X,X,X] => ( x, y-1 ), //boiling sand
                 //[_,X,_, o,o, _,X,_] => ( if self.rng.gen::<i16>()&2 == 0 {x-1} else {x+1}, y ), //random choice
                                         _ => continue,
@@ -181,7 +202,7 @@ impl GameState {
                 particles: Vec::with_capacity(10_000),
                 obstacles: Vec::with_capacity(10_000),
                 indexes_to_remove: Vec::with_capacity(1000),
-                map: Map { map: box [[false; GRID_HEIGHT as usize]; GRID_WIDTH as usize] },
+                map: Map::new(),
                 max_x: GRID_WIDTH,
                 max_y: GRID_HEIGHT,
                 rng: SeedableRng::from_seed([1, 2, 3, 4])

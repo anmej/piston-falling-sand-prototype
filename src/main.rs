@@ -1,6 +1,4 @@
 #![allow(non_upper_case_globals, dead_code)]
-#![feature(box_syntax)]
-#![feature(slice_patterns)]
 
 mod gamestate;
 use gamestate::*;

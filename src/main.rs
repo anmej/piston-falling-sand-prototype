@@ -4,23 +4,10 @@ mod gamestate;
 use gamestate::*;
 
 extern crate rand;
-//use rand::{Rng, SeedableRng, XorShiftRng};
+extern crate piston_window;
+extern crate image as im;
 
-extern crate piston;
-extern crate image;
-extern crate graphics;
-extern crate sdl2_window;
-extern crate opengl_graphics;
-
-use std::rc::Rc;
-use std::cell::RefCell;
-
-use opengl_graphics::{ GlGraphics, OpenGL, Texture };
-use sdl2_window::Sdl2Window;
-use image::GenericImage;
-use piston::input::{ MouseButton };
-use piston::window::{WindowSettings, AdvancedWindow};
-use piston::event::*;
+use piston_window::*;
 
 fn main() {
     let mut game = GameState::new();
@@ -31,24 +18,21 @@ fn main() {
 
     let mut mouse_buttons_pressed = (false, false); //left, right
 
-    let opengl = OpenGL::_3_2;
     let (width, height) = (WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
-    let window = Sdl2Window::new(
-        WindowSettings::new("Falling Sand", (width, height)).opengl(opengl)
+
+    let window: PistonWindow = WindowSettings::new("Falling Sand", (width, height))
         .exit_on_esc(true)
-        //what those do?
-        .vsync(true)
-        .samples(1)
-        .fullscreen(false)
-    );
-    let window = Rc::new(RefCell::new(window));
-    let mut image = image::ImageBuffer::from_pixel(width, height, image::Rgba([0, 0, 0, 255]));
-    let blank = image.clone().into_raw();
-    let mut texture = Texture::from_image(&image);
-    let ref mut gl = GlGraphics::new(opengl);
-    for e in window.clone().events().max_fps(120).ups(60) {
-        use piston::event::*;
-        use piston::input::{Button, Key};
+        .build()
+        .unwrap_or_else(|e| { panic!("Failed to build PistonWindow: {}", e) });
+
+    let mut canvas = im::ImageBuffer::from_pixel(width, height, im::Rgba([0, 0, 0, 255]));
+    let blank = canvas.clone().into_raw();
+    let tex_set = &TextureSettings::new();
+    //https://github.com/PistonDevelopers/piston-examples/blob/master/src/paint.rs
+    let mut texture = Texture::from_image(&mut *window.factory.borrow_mut(), &canvas, tex_set).unwrap();
+
+    //for e in window.clone().events().max_fps(120).ups(60) {
+    for e in window.clone() {
 
         if let Some(Button::Keyboard(key)) = e.press_args() {
             match key {
@@ -107,21 +91,20 @@ fn main() {
         } //if paused
 
         if redraw_needed {
-            if let Some(args) = e.render_args() {
-                image = image::ImageBuffer::from_vec(width, height, blank.clone()).unwrap();
+            if let Some(_) = e.render_args() {
+                canvas = im::ImageBuffer::from_vec(width, height, blank.clone()).unwrap();
                 for particle in game.particles.iter() {
-                    image.put_pixel(particle.x as u32, particle.y as u32,
-                                    image::Rgba([238,232,170,255]));
+                    canvas.put_pixel(particle.x as u32, particle.y as u32,
+                                    im::Rgba([238,232,170,255]));
                 }
                 for obstacle in game.obstacles.iter() {
-                    image.put_pixel(obstacle.x as u32, obstacle.y as u32,
-                                    image::Rgba([128,0,0,255]));
+                    canvas.put_pixel(obstacle.x as u32, obstacle.y as u32,
+                                    im::Rgba([128,0,0,255]));
                 }
-                texture.update(&image);
-                gl.draw(args.viewport(), |c, gl| {
-                    graphics::image(&texture, c.transform, gl);
+                texture.update(&mut*window.factory.borrow_mut(), &canvas).unwrap();
+                e.draw_2d(|c, g| {
+                    image(&texture, c.transform, g);
                 });
-
                 redraw_needed = false;
             }
         };

@@ -106,11 +106,7 @@ impl Map {
 impl GameState {
     // check if point in inside the grid
     pub fn is_valid(x: i16, y: i16) -> bool {
-        if x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT {
-            false
-        } else {
-            true
-        }
+        !(x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT)
     }
 
     pub fn update(&mut self) {
@@ -147,7 +143,7 @@ impl GameState {
     } //end update
 
     pub fn rain(&mut self) {
-        for x in 1 * (GRID_WIDTH / 20)..19 * (GRID_WIDTH / 20) {
+        for x in (GRID_WIDTH / 20)..19 * (GRID_WIDTH / 20) {
             if !self.map.is_occupied(x, 0) && self.rng.gen::<i16>() & RAIN_SPARSENESS == 0 {
                 self.particles.push(Loc { x: x, y: 0 });
                 self.map.add_coord_map(x, 0);

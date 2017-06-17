@@ -100,14 +100,14 @@ fn main() {
         if redraw_needed {
             if let Some(_) = e.render_args() {
                 canvas = im::ImageBuffer::from_vec(width, height, blank.clone()).unwrap();
-                for particle in game.particles.iter() {
+                for particle in &game.particles {
                     canvas.put_pixel(
                         particle.x as u32,
                         particle.y as u32,
                         im::Rgba([238, 232, 170, 255]),
                     );
                 }
-                for obstacle in game.obstacles.iter() {
+                for obstacle in &game.obstacles {
                     canvas.put_pixel(
                         obstacle.x as u32,
                         obstacle.y as u32,

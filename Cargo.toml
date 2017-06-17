@@ -5,6 +5,5 @@ authors = ["anmej"]
 
 [dependencies]
 rand = "0.3"
-#image = "0.10.3"
-image = "0.10"
-piston_window = "0.57"
+image = "0.13"
+piston_window = "0.66"

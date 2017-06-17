@@ -4,8 +4,8 @@ use std::fmt;
 
 use rand::{Rng, SeedableRng, XorShiftRng};
 
-pub const GRID_HEIGHT: i16 = 900;
-pub const GRID_WIDTH: i16 = 1440;
+pub const GRID_HEIGHT: i16 = 1000;
+pub const GRID_WIDTH: i16 = 400;
 
 pub const BLOCK_SIZE: i16 = 1;
 
@@ -52,26 +52,25 @@ impl Map {
         if !GameState::is_valid(x, y) {
             false
         } else {
-            unsafe {
-                *self.map
-                    .get_unchecked(x as usize)
-                    .get_unchecked(y as usize)
-            }
+            unsafe { *self.map.get_unchecked(x as usize).get_unchecked(y as usize) }
         }
     }
 
-    fn get_neighbours(&mut self,
-                      x: i16,
-                      y: i16)
-                      -> (bool, bool, bool, bool, bool, bool, bool, bool) {
-        (self.is_occupied(x - 1, y - 1),
-         self.is_occupied(x, y - 1),
-         self.is_occupied(x + 1, y - 1),
-         self.is_occupied(x - 1, y),
-         self.is_occupied(x + 1, y),
-         self.is_occupied(x - 1, y + 1),
-         self.is_occupied(x, y + 1),
-         self.is_occupied(x - 1, y + 1))
+    fn get_neighbours(
+        &mut self,
+        x: i16,
+        y: i16,
+    ) -> (bool, bool, bool, bool, bool, bool, bool, bool) {
+        (
+            self.is_occupied(x - 1, y - 1),
+            self.is_occupied(x, y - 1),
+            self.is_occupied(x + 1, y - 1),
+            self.is_occupied(x - 1, y),
+            self.is_occupied(x + 1, y),
+            self.is_occupied(x - 1, y + 1),
+            self.is_occupied(x, y + 1),
+            self.is_occupied(x - 1, y + 1),
+        )
     }
 
     fn add_coord_map(&mut self, x: i16, y: i16) {
@@ -95,8 +94,8 @@ impl Map {
 
         let boxed_array = unsafe {
             let v_raw: *const [bool] = ::std::mem::transmute(v_slice);
-            let v_raw: *const [[bool; GRID_HEIGHT as usize]; GRID_WIDTH as usize] =
-                v_raw as *const _;
+            let v_raw: *const [[bool; GRID_HEIGHT as usize]; GRID_WIDTH as usize] = v_raw as
+                *const _;
             ::std::mem::transmute(v_raw)
         };
 
@@ -134,10 +133,7 @@ impl GameState {
             if Self::is_valid(x_new, y_new) {
                 self.map.remove_coord_map(x, y);
                 self.map.add_coord_map(x_new, y_new);
-                *particle = Loc {
-                    x: x_new,
-                    y: y_new,
-                };
+                *particle = Loc { x: x_new, y: y_new };
             } else {
                 self.map.map[x as usize][y as usize] = false;
                 self.indexes_to_remove.push(index); //prepare list of particles to remove
@@ -148,7 +144,7 @@ impl GameState {
             self.particles.swap_remove(*index);
         }
         self.indexes_to_remove.clear();
-    }//end update
+    } //end update
 
     pub fn rain(&mut self) {
         for x in 1 * (GRID_WIDTH / 20)..19 * (GRID_WIDTH / 20) {
@@ -159,10 +155,12 @@ impl GameState {
         }
     }
 
-    fn remove_indices_in_rect(items: &mut Vec<Loc>,
-                              indexes_to_remove: &mut Vec<usize>,
-                              ul: Loc,
-                              lr: Loc) {
+    fn remove_indices_in_rect(
+        items: &mut Vec<Loc>,
+        indexes_to_remove: &mut Vec<usize>,
+        ul: Loc,
+        lr: Loc,
+    ) {
         for (index, p) in items.iter().enumerate() {
             if p.x >= ul.x && p.y >= ul.y && p.x < lr.x && p.y < lr.y {
                 indexes_to_remove.push(index);
@@ -189,7 +187,7 @@ impl GameState {
     }
 
     pub fn remove_square(&mut self, ux: i16, uy: i16, dx: i16, dy: i16) {
-        if  Self::is_valid(ux, uy) && Self::is_valid(ux + dx, uy + dy) {
+        if Self::is_valid(ux, uy) && Self::is_valid(ux + dx, uy + dy) {
             for x in ux..ux + dx {
                 for y in uy..uy + dy {
                     self.map.remove_coord_map(x, y);
@@ -200,17 +198,19 @@ impl GameState {
                 x: ux + dx,
                 y: uy + dy,
             };
-            Self::remove_indices_in_rect(&mut self.obstacles,
-                                         &mut self.indexes_to_remove,
-                                         ul.clone(),
-                                         lr.clone());
+            Self::remove_indices_in_rect(
+                &mut self.obstacles,
+                &mut self.indexes_to_remove,
+                ul.clone(),
+                lr.clone(),
+            );
             Self::remove_indices_in_rect(&mut self.particles, &mut self.indexes_to_remove, ul, lr);
         }
     }
 
     pub fn paint_square_obstacles(&mut self, ux: i16, uy: i16, dx: i16, dy: i16) {
         //if Self::is_valid(ux + dx, uy + dy) {
-        if Self::is_valid(ux, uy) && Self::is_valid(ux + dx, uy + dy){
+        if Self::is_valid(ux, uy) && Self::is_valid(ux + dx, uy + dy) {
             for x in ux..ux + dx {
                 for y in uy..uy + dy {
                     if !self.map.is_occupied(x, y) {
@@ -233,4 +233,4 @@ impl GameState {
             rng: SeedableRng::from_seed([1, 2, 3, 4]),
         }
     }
-}//end impl GameState
+} //end impl GameState

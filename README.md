@@ -14,6 +14,6 @@ Change RAIN_SPARSENESS const to change the density of the falling sand.
 
 This program might require installation of freetype and SDL2 libraries to work.
 
-Compiles with: rustc 1.12.1 (d4f39402a 2016-10-19)
+Compiles with: rustc 1.18.0 (03fc9d622 2017-06-06)
 
 ![Screenshot](screenshot.png?raw=true "Screenshot")

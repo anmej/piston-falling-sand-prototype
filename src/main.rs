@@ -9,6 +9,7 @@ extern crate image as im;
 
 use piston_window::*;
 use std::borrow::BorrowMut;
+use im::Pixel;
 
 fn main() {
     let mut game = GameState::new();
@@ -21,12 +22,14 @@ fn main() {
 
     let (width, height) = (WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
 
-    let mut window: PistonWindow = WindowSettings::new("Falling Sand", (width, height))
-        .exit_on_esc(true)
-        .build()
-        .unwrap_or_else(|e| panic!("Failed to build PistonWindow: {}", e));
+    let mut window: PistonWindow =
+        WindowSettings::new("Falling Sand", (width, height))
+            .exit_on_esc(true)
+            .build()
+            .unwrap_or_else(|e| panic!("Failed to build PistonWindow: {}", e));
 
-    let mut canvas = im::ImageBuffer::from_pixel(width, height, im::Rgba([0, 0, 0, 255]));
+    let pixel = im::Rgba::from_channels(0, 0, 0, 255);
+    let mut canvas = im::ImageBuffer::from_pixel(width, height, pixel);
     let blank = canvas.clone().into_raw();
     let tex_set = &TextureSettings::new();
     // https://github.com/PistonDevelopers/piston-examples/blob/master/src/paint.rs
@@ -58,7 +61,7 @@ fn main() {
                 }
                 game.update();
                 redraw_needed = true;
-            }//if !paused {
+            } //if !paused {
         }
 
         if paused {
@@ -98,19 +101,21 @@ fn main() {
             if let Some(_) = e.render_args() {
                 canvas = im::ImageBuffer::from_vec(width, height, blank.clone()).unwrap();
                 for particle in game.particles.iter() {
-                    canvas.put_pixel(particle.x as u32,
-                                     particle.y as u32,
-                                     im::Rgba([238, 232, 170, 255]));
+                    canvas.put_pixel(
+                        particle.x as u32,
+                        particle.y as u32,
+                        im::Rgba([238, 232, 170, 255]),
+                    );
                 }
                 for obstacle in game.obstacles.iter() {
-                    canvas.put_pixel(obstacle.x as u32,
-                                     obstacle.y as u32,
-                                     im::Rgba([128, 0, 0, 255]));
+                    canvas.put_pixel(
+                        obstacle.x as u32,
+                        obstacle.y as u32,
+                        im::Rgba([128, 0, 0, 255]),
+                    );
                 }
                 texture.update(&mut window.encoder, &canvas).unwrap();
-                window.draw_2d(&e, |c, g| {
-                    image(&texture, c.transform, g);
-                });
+                window.draw_2d(&e, |c, g| { image(&texture, c.transform, g); });
                 redraw_needed = false;
             }
         };
